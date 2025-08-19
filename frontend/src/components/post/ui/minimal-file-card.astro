@@ -1,0 +1,127 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Badge from '../../base/badge.astro';
+import { formatDate } from '../../../shared/utils';
+import { marked } from 'marked';
+import type { FileFromAPI } from '../../../shared/type/file-from-api';
+import truncate from 'html-truncate';
+
+export interface Props {
+  file: FileFromAPI;
+  href: string;
+}
+
+const { file, href } = Astro.props;
+
+const formattedDate = formatDate(file.date);
+---
+
+<article class='card'>
+  <div class='meta-section'>
+    <span class='date'>{formattedDate}</span>
+  </div>
+
+  <div class='content-section'>
+    <a
+      title={file.title}
+      href={href}
+      class='title-link'>
+      <h3 class='title'>{file.title}</h3>
+    </a>
+  </div>
+</article>
+
+<style>
+  .card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap; 
+  margin-top: 1rem;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+  color: hsl(var(--oposite-color));
+}
+
+  .meta-section {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 100px !important;
+  }
+
+  .badge-link {
+    text-decoration: none;
+    max-width: fit-content;
+  }
+
+  .date {
+    margin-top: 0.625rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    width: 100px;
+  }
+
+  .content-section {
+    padding: 0;
+    flex: 1;
+  }
+
+  .title-link {
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .title {
+    margin: 0;
+    font-family: 'PT Serif', serif;
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1;
+    transition: text-decoration 0.2s ease;
+    letter-spacing: -0.025em;
+  }
+
+  .title-link:hover .title {
+    text-decoration: underline;
+  }
+
+  .description {
+    margin: 0;
+    padding-top: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.625;
+    color: hsl(var(--muted-foreground));
+  }
+
+  @media (min-width: 768px) {
+    .card {
+      flex-wrap: nowrap;
+    }
+
+    .meta-section {
+      margin-bottom: 0;
+      width: 14rem;
+    }
+
+    .date {
+      display: block;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .meta-section {
+      width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 0 0.5rem;
+    }
+
+    .date {
+      display: block;
+    }
+  }
+</style>

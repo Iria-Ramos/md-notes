@@ -1,0 +1,12 @@
+---
+const { isHeader = true } = Astro.props;
+const width = isHeader ? 80 : 128;
+const height = isHeader ? 24.5 : 36;
+---
+
+<img 
+  src="/icon.png" 
+  alt="MD Icon" 
+  width={width} 
+  height={height} 
+/>

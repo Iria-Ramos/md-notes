@@ -1,0 +1,88 @@
+---
+import Button from "../base/button.astro";
+---
+
+<section>
+  <form class="upload-form" method="post" enctype="multipart/form-data">
+    <input class="file-input" name="files" type="file" accept=".md" multiple />
+    <div class="separation">
+      <Button type="submit" variant="clear"> Upload </Button>
+    </div>
+  </form>
+</section>
+
+<p id="status"></p>
+
+<div id="file-info-list"></div>
+
+<script>
+  const form = document.querySelector("form") as HTMLFormElement;
+  const status = document.getElementById("status") as HTMLParagraphElement;
+  const fileInput = document.querySelector(
+    `input[type='file']`
+  ) as HTMLInputElement;
+  const button = document.querySelector("button") as HTMLButtonElement;
+  const fileInfoList = document.getElementById(
+    "file-info-list"
+  ) as HTMLDivElement;
+
+  async function uploadFiles(formData: FormData): Promise<void> {
+    try {
+      const response = await fetch("http://localhost:3000/notes/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not OK");
+      }
+
+      const data = await response.json();
+      updateStatusMessage('✅ File uploaded successfully.');
+    } catch (error) {
+      console.error("Uploading files failed", error);
+      updateStatusMessage("❌ Uploading file(s) failed.");
+    }
+  }
+
+  function handleSubmit(event: SubmitEvent): void {
+    event.preventDefault();
+
+    updateStatusMessage("⏳ Uploading file(s)...");
+    const formData = new FormData(form);
+    uploadFiles(formData);
+  }
+
+  form.addEventListener("submit", handleSubmit);
+
+  function updateStatusMessage(message: string): void {
+    status.textContent = message;
+  }
+</script>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+  }
+
+  .file-input {
+    width: 50%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .info-list {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+  }
+
+  .separation {
+    margin-top: 25px;
+  }
+</style>

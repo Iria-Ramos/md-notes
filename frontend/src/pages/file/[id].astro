@@ -1,0 +1,35 @@
+---
+import { marked } from 'marked';
+import Separator from "../../components/base/separator.astro";
+import BaseLayout from '../../app/layouts/base-layout.astro';
+import type { FileFromAPI } from '../../shared/type/file-from-api';
+import sanitizeHtml from "sanitize-html";
+
+
+export async function getStaticPaths() {
+  const res = await fetch(`http://localhost:3000/notes`);
+  const files = await res.json()
+  return files.map((file: FileFromAPI) => ({
+    params: { id: file.id },
+  }));
+}
+
+const { id } = Astro.params;
+
+// Fetch the note from your endpoint
+const res = await fetch(`http://localhost:3000/notes/${id}`);
+if (!res.ok) throw new Error(`Note not found: ${id}`);
+
+const file = await res.json();
+const html = await marked(file.content);
+const safeHtml = sanitizeHtml(html)
+---
+
+<BaseLayout title={file.title}>
+  <div class="main">
+    <h1>{file.title}</h1>
+    <time>{new Date(file.date).toDateString()}</time>
+    <Separator />
+    <p set:html={safeHtml}></p>
+  </div>
+</BaseLayout>

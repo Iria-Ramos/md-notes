@@ -1,0 +1,63 @@
+---
+import Separator from "../base/separator.astro";
+
+const currentPath = Astro.url.pathname;
+---
+
+<footer class='footer'>
+  <div class='footer-container'>
+    <Separator class='my-6' />
+    <p>
+      &copy; {new Date().getFullYear()} All rights reserved :: Powered by <a
+        href='https://astro.build'>Astro</a
+      > &
+      <a href='http://jsdev.space'>JSDev Theme</a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: 3.5rem;
+  }
+  .footer-container {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 1200px;
+    overflow: hidden;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 3rem;
+    gap: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .footer-container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .footer-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  .footer-nav {
+    margin: 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+  .social-icons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1.5rem;
+  }
+</style>

@@ -1,0 +1,213 @@
+---
+import Button from "../base/button.astro";
+
+interface Props {
+  file?: {
+    title: string;
+    content: string;
+  };
+}
+
+const { file } = Astro.props;
+---
+
+<div class="box title-grid">
+  <input id="titleInput" class="box" type="text" placeholder="Filename (optional)" value={file?.title || ''} />
+  <div class="spacing">
+    <Button id="formatBtn" type="submit" variant="clear">Preview</Button>
+    <Button id="grammarBtn" type="submit" variant="clear">Check grammar</Button>
+    <Button id="saveBtn" type="submit" variant="clear">Save</Button>
+    <Button id="uploadBtn" type="submit" variant="clear">Upload</Button>
+  </div>
+</div>
+<div class="box grid">
+  <textarea class="box" id="mdText">{file?.content}</textarea>
+  <div id="htmlPreview" class="box"></div>
+</div>
+
+<script>
+  const textarea = document.getElementById(
+    "mdText"
+  ) as HTMLTextAreaElement | null;
+  const titleInput = document.getElementById(
+    "titleInput"
+  ) as HTMLInputElement | null;
+
+  const formatBtn = document.getElementById("formatBtn");
+  const htmlBox = document.getElementById("htmlPreview") as HTMLElement | null;
+
+  if (formatBtn && textarea && htmlBox) {
+    formatBtn.addEventListener("click", async () => {
+      try {
+        const response = await fetch("http://localhost:3000/notes/html", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: textarea.value }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not OK");
+        }
+        htmlBox.innerHTML = await response.text();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  }
+
+  const grammarBtn = document.getElementById("grammarBtn");
+
+  if (grammarBtn && textarea) {
+    grammarBtn.addEventListener("click", async () => {
+      const content = textarea.value;
+      const response = await fetch("http://localhost:3000/grammar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: content }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not OK");
+      }
+
+      const data = await response.json();
+
+      // If the response is keyed by numbers (like {"0": {...}}), convert to array
+      const issues = Object.values(data);
+
+      // Build HTML list of issues
+      let issuesHtml = "<ul class='grammar-issues'>";
+      issues.forEach((item: any) => {
+        const word = content.slice(item.offset, item.offset + item.length);
+
+        // Format replacements if available
+        let replacementsHtml = "";
+        if (item.replacements && item.replacements.length > 0) {
+          const suggestions = item.replacements
+            .map((r: any) => `<span class="replacement">${r.value}</span>`)
+            .join(", ");
+          replacementsHtml = `<div class="suggestions">💡 Suggestions: ${suggestions}</div>`;
+        }
+
+        issuesHtml += `
+      <li style="padding-bottom: 5%;">
+        <span>❌ ${word}</span> – 
+        <span>${item.message}</span>
+        ${replacementsHtml}
+      </li>
+    `;
+      });
+      issuesHtml += "</ul>";
+
+      if (htmlBox) {
+        htmlBox.innerHTML = issuesHtml;
+      }
+    });
+  }
+
+  const saveBtn = document.getElementById("saveBtn");
+
+  if (saveBtn && textarea) {
+    saveBtn.addEventListener("click", () => {
+      const content = textarea.value;
+      let filename = titleInput?.value?.trim() || "New Markdown";
+      if (!filename.endsWith(".md")) filename += ".md";
+
+      const blob = new Blob([content], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  const uploadBtn = document.getElementById("uploadBtn");
+
+  if (uploadBtn && textarea) {
+    uploadBtn.addEventListener("click", async () => {
+      const content = textarea.value;
+      let filename = titleInput?.value?.trim() || "New Markdown";
+      if (filename.endsWith(".md")) filename = filename.slice(0, -3);
+      
+      const segments = window.location.pathname.split('/').filter(Boolean);
+      if(segments[1] === "edit") {
+        const response = await fetch("http://localhost:3000/notes/" + segments[2], {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: filename, content: content }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not OK");
+        }
+  
+        alert("✅ File edit uploaded succesfully!");
+  
+      } else {
+        const response = await fetch("http://localhost:3000/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: filename, content: content }),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Network response was not OK");
+        }
+  
+        alert("✅ File uploaded succesfully!");
+      }
+
+    });
+  }
+</script>
+
+<style>
+  .box {
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground, #111827));
+    padding: 0.5rem 1.5rem 0.5rem 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    overflow-y: scroll;
+  }
+
+  .grid {
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: space-between;
+    column-gap: 1.25rem;
+  }
+
+  .title-grid {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: space-between;
+    column-gap: 1.25rem;
+    align-items: center;
+  }
+
+  .box.grid {
+    height: min(70vh, 50vw);
+  }
+
+  .spacing {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  textarea {
+    position: relative;
+    background: transparent;
+    resize: none;
+  }
+</style>

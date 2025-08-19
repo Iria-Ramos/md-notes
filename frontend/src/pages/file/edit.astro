@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../app/layouts/base-layout.astro";
+import HeadingBlock from "../../components/layout/heading-block.astro";
+import MinimalFileCard from "../../components/post/ui/minimal-file-card.astro";
+import type { FileFromAPI } from "../../shared/type/file-from-api";
+
+const res = await fetch("http://localhost:3000/notes");
+const minimalFiles: FileFromAPI[] = await res.json();
+---
+
+<BaseLayout title="Edit note">
+  <div class="main">
+    <HeadingBlock
+      title="Choose note to edit"
+      description="Choose the note you want to edit from the list"
+    />
+    <div class="grid">
+      {
+        minimalFiles.map((file, idx) => {
+          return <MinimalFileCard file={file} href={`/file/edit/${file.id}/`} />;
+        })
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 0.5fr);
+    gap: 1rem;
+  }
+</style>

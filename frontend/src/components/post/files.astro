@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import MinimalFileCard from './ui/minimal-file-card.astro';
+
+type Props = {
+  files?: CollectionEntry<'files'>[];
+  className?: string;
+};
+
+const { files = [], className = '' } = Astro.props;
+
+const firstNinefiles = files.slice(0, 9);
+const remainingfiles = files.slice(9);
+---
+
+<section class='files-section'>
+  <div class={`container-center first-batch ${className}`}>
+    {firstNinefiles.map(file => <MinimalFileCard file={file} />)}
+  </div>
+
+  {
+    remainingfiles.length > 0 && (
+      <div class={`container-center second-batch ${className}`}>
+        {remainingfiles.map(file => (
+          <MinimalFileCard file={file} />
+        ))}
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .files-section {
+    overflow: hidden;
+  }
+</style>

@@ -1,0 +1,18 @@
+---
+import { siteConfig } from '../../app/config/site';
+import BaseLayout from '../../app/layouts/base-layout.astro';
+import Button from '../../components/base/button.astro';
+import FileUpload from '../../components/layout/file-upload.astro';
+import HeadingBlock from '../../components/layout/heading-block.astro';
+---
+
+<BaseLayout title="Create new md">
+    <HeadingBlock
+        title={siteConfig.uploadHeadTitle}
+        description={siteConfig.uploadHeadDesc}
+    >
+    <FileUpload/>
+    </HeadingBlock>
+</BaseLayout>
+
+

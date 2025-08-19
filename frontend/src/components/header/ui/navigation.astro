@@ -1,0 +1,222 @@
+---
+import { siteConfig } from "../../../app/config/site";
+import { isActiveLink } from '../../../shared/utils/format-url';
+
+const { navigation } = siteConfig
+const currentPath = Astro.url.pathname;
+---
+
+<div class='navigation-wrapper'>
+  <nav class='desktop-nav'>
+    {
+      navigation.map(navLink => (
+        <a
+          href={`${navLink.path}/`}
+          class={`nav-link ${isActiveLink(navLink.path, currentPath) ? 'nav-link--active' : ''}`}>
+          {navLink.name}
+        </a>
+      ))
+    }
+  </nav>
+</div>
+
+<style>
+  .navigation-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    width: 100%
+  }
+
+  .desktop-nav {
+    display: none;
+    gap: 0.1rem;
+  }
+
+  .nav-link {
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+  }
+
+  .nav-link:hover,
+  .nav-link--active {
+    color: #000000;
+    background-color: var(--md-accent);
+  }
+
+  .mobile-sheet__logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .mobile-nav__link {
+    color: hsl(var(--foreground));
+    font-size: 1.125rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .mobile-nav__link:hover {
+    background: hsl(var(--accent));
+    border-color: hsl(var(--border));
+    color: hsl(var(--primary));
+  }
+
+  .mobile-nav__link--active {
+    background: hsl(var(--primary) / 0.1);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+  }
+
+  .mobile-sheet__separator {
+    height: 1px;
+    background: hsl(var(--border));
+    margin: 2rem 0;
+  }
+
+  .mobile-sheet__social {
+    margin-top: auto;
+  }
+
+  .mobile-sheet__social-title {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 1rem;
+  }
+
+  @media (min-width: 900px) {
+    .desktop-nav {
+      display: flex;
+    }
+
+    .mobile-menu-btn,
+    .mobile-sheet,
+    .mobile-sheet-overlay,
+    .mobile-close-btn {
+      display: none;
+    }
+  }
+
+  :global(.dark) .mobile-sheet {
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.5);
+  }
+
+  :global(.dark) .mobile-close-btn {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-sheet.active .mobile-nav__link {
+    animation: slideInLeft 0.3s ease forwards;
+  }
+
+  .mobile-sheet.active .mobile-nav__link:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .mobile-sheet.active .mobile-nav__link:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .mobile-sheet.active .mobile-nav__link:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+  .mobile-sheet.active .mobile-nav__link:nth-child(4) {
+    animation-delay: 0.25s;
+  }
+  .mobile-sheet.active .mobile-nav__link:nth-child(5) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+</style>
+
+<script>
+  class MobileNavigation {
+    trigger;
+    overlay;
+    sheet;
+    closeBtn;
+    isOpen = false;
+
+    constructor() {
+      this.trigger = document.querySelector('[data-mobile-menu-trigger]');
+      this.overlay = document.querySelector('[data-mobile-overlay]');
+      this.sheet = document.querySelector('[data-mobile-sheet]');
+      this.closeBtn = document.querySelector('[data-mobile-close]');
+
+      this.init();
+    }
+
+    init() {
+      if (!this.trigger || !this.overlay || !this.sheet || !this.closeBtn) return;
+
+      this.trigger.addEventListener('click', () => this.open());
+      this.closeBtn.addEventListener('click', () => this.close());
+      this.overlay.addEventListener('click', () => this.close());
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && this.isOpen) this.close();
+      });
+
+      this.sheet.addEventListener('click', e => {
+        if (e.target instanceof HTMLElement && e.target.tagName === 'A') {
+          setTimeout(() => this.close(), 150);
+        }
+      });
+    }
+
+    open() {
+      this.isOpen = true;
+      this.overlay?.classList.add('active');
+      this.sheet?.classList.add('active');
+      this.closeBtn?.classList.add('active');
+
+      document.body.style.overflow = 'hidden';
+
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    close() {
+      this.isOpen = false;
+      this.overlay?.classList.remove('active');
+      this.sheet?.classList.remove('active');
+      this.closeBtn?.classList.remove('active');
+
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    new MobileNavigation();
+  });
+
+  document.addEventListener('astro:page-load', () => {
+    new MobileNavigation();
+  });
+</script>

@@ -1,0 +1,42 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import FileCard from './ui/file-card.astro';
+import type { FileFromAPI } from '../../shared/type/file-from-api';
+
+export interface Props {
+  files: FileFromAPI[];
+}
+
+const { files = [] } = Astro.props;
+---
+
+<section class="featured-files">
+  {
+    files.map((file, idx) => {
+      return <FileCard file={file} />;
+    })
+  }
+</section>
+
+<style>
+  .featured-files {
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    justify-content: space-between;
+    column-gap: 1.25rem;
+    row-gap: 2.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .featured-files {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .featured-files {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
