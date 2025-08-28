@@ -220,7 +220,7 @@ import type { CreateNode } from "../../shared/type/folder";
             parentId: folderId, 
             noteId: Number(element.id)
         }
-        const folderRes = await apiFetch(`/dirs/addChild`, {
+        const folderRes = await apiFetch('/dirs/addChild', {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -244,7 +244,7 @@ import type { CreateNode } from "../../shared/type/folder";
     border: 1px solid hsl(var(--border));
     background-color: hsl(var(--card));
     color: hsl(var(--card-foreground, #111827));
-    padding: 0.5rem 1.5rem 0.5rem 1.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
     border-radius: var(--radius);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     word-wrap: break-word;
