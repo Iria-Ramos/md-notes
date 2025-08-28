@@ -1,39 +1,62 @@
 ---
+import type { Node } from "../../shared/type/folder";
+import { BasicTree } from "./ui/basic-tree";
 
-const { directories } = Astro.props
+export interface Props {
+  folderTree: Node;
+}
+
+const { folderTree } = Astro.props;
+console.log(folderTree)
+
+function flattenTree(node: any) : Node[] {
+  // Start with the current node
+  let result = [{ ...node, children: undefined }]; 
+  // If the node has children, recursively flatten them
+  if (node.children && node.children.length > 0) {
+    for (let child of node.children) {
+      result = result.concat(flattenTree(child));
+    }
+  }
+  return result;
+}
+
+let flatArray = flattenTree(folderTree);
 ---
 
 <div class="sidebar">
-  <button
-    class="menu-btn"
-    aria-label="Toggle navigation menu"
-    data-mobile-menu-trigger
-  >
-    <svg
-      class="menu-icon"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      fill="none"
-      stroke-width="2"
-    >
-      <line x1="4" y1="6" x2="20" y2="6"></line>
-      <line x1="4" y1="12" x2="20" y2="12"></line>
-      <line x1="4" y1="18" x2="20" y2="18"></line>
-    </svg>
-  </button>
-  <p style="padding-left: 1rem;">Directorties</p>
+  <div class="dropdown">
+    <div class="dropdown-menu box">
+      <button
+      class="menu-btn"
+      aria-label="Toggle navigation menu"
+      data-mobile-menu-trigger
+      >
+        <svg
+          class="menu-icon"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          fill="none"
+          stroke-width="2"
+        >
+          <line x1="4" y1="6" x2="20" y2="6"></line>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="18" x2="20" y2="18"></line>
+        </svg>
+      </button>
+      <p class="dropdown-label">Directorties</p>
+    </div>
+    <aside class="sheet" data-mobile-sheet>
+      <div class="sheet__separator"></div>
+      <div class="folder-structure">
+        <BasicTree folders={folderTree} client:only="react" />
+      </div>
+    </aside>
+  </div>
 
   <div class="sheet-overlay" data-mobile-overlay></div>
-
-  <aside class="sheet" data-mobile-sheet>
-    <div class="sheet__header">
-      <p class="sheet__title">Directorties</p>
-    </div>
-
-    <div class="sheet__separator"></div>
-  </aside>
 
   <button
     class="close-btn"
@@ -54,18 +77,175 @@ const { directories } = Astro.props
   </button>
 </div>
 
-<style>
-  .sidebar {
-    position: fixed;
-    top: 0.5rem;
-    left: 1rem;
-    width: auto;
-    height: auto;
-    display: flex;
-    align-items: center;
-    z-index: 1000;
+<script define:vars={{ folderTree, flatArray }}>
+  const menuBtn = document.querySelector("[data-mobile-menu-trigger]");
+  const sheet = document.querySelector("[data-mobile-sheet]");
+  const closeBtn = document.querySelector("[data-mobile-close]");
+  let treeArr = flatArray
+
+  if (menuBtn && closeBtn && sheet) {
+    menuBtn.addEventListener("click", () => {
+      sheet.classList.add("active");
+      closeBtn.classList.add("active");
+      menuBtn.classList.add("hide");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      sheet.classList.remove("active");
+      closeBtn.classList.remove("active");
+      menuBtn.classList.remove("hide");
+    });
   }
 
+  const renameNode = (span, id) => {
+    console.log("Transforming into input...")
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = span.textContent; 
+    input.className = "rename-input";
+    span.replaceWith(input);
+
+    const checkBtn = document.createElement("button");
+    checkBtn.textContent = "✔"; 
+    checkBtn.className = "rename-check";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "✖";
+    cancelBtn.className = "rename-cancel";
+
+    input.insertAdjacentElement("afterend", cancelBtn);
+    input.insertAdjacentElement("afterend", checkBtn);
+
+    checkBtn.addEventListener("click", () => {
+      span.textContent = input.value;
+      input.replaceWith(span);
+      checkBtn.remove();
+      cancelBtn.remove();
+      window.dispatchEvent(new CustomEvent("renameNode", { detail: { name: input.value, id: id } }))
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      input.replaceWith(span);
+      checkBtn.remove();
+      cancelBtn.remove();
+    });
+  }
+
+  const createSpan = (node, idx) => {
+    const newSpan = document.createElement("span");
+    const fold = treeArr[idx]
+    const id = `${fold.type}-${fold.id}`;
+    const editName = node.querySelector(".displayName");
+    newSpan.classList.add("menu-actions");
+    newSpan.setAttribute("id", id);
+    newSpan.addEventListener("click", (e) => {
+      e.stopPropagation();
+      console.log("Clicked menu-actions on:", e.target.id);
+
+      let existingDiv = node.querySelector(`.options#${id}`);
+      if (existingDiv) {
+        existingDiv.remove();
+      } else {
+        const newDiv = document.createElement("div");
+        newDiv.classList.add("options");
+        newDiv.setAttribute("id", id);
+       const actions = [
+        {
+          label: "Rename",
+          onClick: () => renameNode(editName, fold.id),
+        },
+        {
+          label: "Delete",
+          onClick: () =>
+            window.dispatchEvent(new CustomEvent("deleteNode", { detail: fold.id })),
+          disabled: fold.id === 1, // disable delete for root
+        },
+        {
+          label: "Add file",
+          onClick: () =>
+            window.dispatchEvent(
+              new CustomEvent("addNode", { detail: { type: false, parentId: fold.id } })
+            ),
+        },
+        {
+          label: "Add folder",
+          onClick: () =>
+            window.dispatchEvent(
+              new CustomEvent("addNode", { detail: { type: true, parentId: fold.id } })
+            ),
+        },
+      ];
+
+      actions.forEach(({ label, onClick, disabled }) => {
+        const btn = document.createElement("button");
+        btn.textContent = label;
+        btn.classList.add("option-btn");
+
+        if (disabled) {
+          btn.disabled = true;
+          btn.style.opacity = "0.5";
+        } else {
+          btn.addEventListener("click", onClick);
+        }
+
+        newDiv.appendChild(btn);
+      });
+        newDiv.style.position = "absolute";
+        newDiv.style.top = `${newSpan.offsetTop + newSpan.offsetHeight}px`;
+        newDiv.style.left = `${newSpan.offsetLeft - 72}px`;
+        node.append(newDiv);
+
+        const handleOutsideClick = (ev) => {
+          if (!node.contains(ev.target)) {
+            newDiv.remove();
+            document.removeEventListener("click", handleOutsideClick);
+          }
+        };
+        document.addEventListener("click", handleOutsideClick);
+      }
+    });
+    node.append(newSpan)
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const checkExist = setInterval(() => {
+    const folderTreeSlc = document.querySelector(".FolderTree");
+      if (folderTreeSlc) {
+        const treeNodes = folderTreeSlc.querySelectorAll(".TreeNode");
+  
+        treeNodes.forEach((node, idx) => {
+          createSpan(node, idx);          
+        })
+        clearInterval(checkExist);
+      }
+    }, 500);
+  })
+
+  function flattenTree(node) {
+    let result = [{ ...node, children: undefined }]; 
+    if (node.children && node.children.length > 0) {
+      for (let child of node.children) {
+        result = result.concat(flattenTree(child));
+      }
+    }
+    return result;
+  }
+
+
+  window.addEventListener("addSpan", async (e) => { 
+    setTimeout(() => {
+      const { node, tree } = e.detail;
+      treeArr = flattenTree(tree) 
+      const idx = treeArr.findIndex((n) => n.id == node.id)
+      const spanNode = document.querySelectorAll(".TreeNode")
+      createSpan(spanNode[idx], idx)  
+    }, 1000);
+  })
+</script>
+
+
+
+<style>
   .menu-btn {
     display: flex;
     top: 1rem;
@@ -79,11 +259,15 @@ const { directories } = Astro.props
     color: hsl(var(--foreground));
     cursor: pointer;
     transition: all 0.2s ease;
-    z-index: 50;
+    z-index: 12;
   }
 
   .menu-btn:hover {
     background: hsl(var(--accent));
+  }
+
+  .menu-btn.hide {
+    visibility: hidden;
   }
 
   .menu-icon {
@@ -91,42 +275,37 @@ const { directories } = Astro.props
     height: 1.25rem;
   }
 
-  .sheet-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 998;
+  .dropdown {
+    position: flex;
   }
 
-  .sheet-overlay.active {
-    opacity: 1;
-    visibility: visible;
+  .dropdown-menu {
+    display: block ruby;
+    margin-left: 1.5rem;
+  }
+
+  .dropdown-label {
+    margin-left: 1rem;
+  }
+
+  .sheet.active {
+    transform: scaleY(1);
   }
 
   .sheet {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 80%;
-    max-width: 320px;
-    background: hsl(var(--background));
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: 999;
     display: flex;
-    flex-direction: column;
-    padding: 2rem 1.5rem;
-    overflow-y: auto;
-    border-right: 1px solid hsl(var(--border));
+    margin-left: 1.5rem;
+    min-width: 25vh;
+    max-width: 40vh;
+    min-height: 80vh;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.2s ease;
+    overflow: scroll;
   }
 
   .sheet.active {
@@ -135,10 +314,10 @@ const { directories } = Astro.props
 
   .close-btn {
     position: fixed;
-    top: 1rem;
-    left: 1rem;
-    width: 48px;
-    height: 48px;
+    top: 4.5rem;
+    left: 1.5rem;
+    width: 40px;
+    height: 40px;
     background: hsl(var(--background));
     border: 2px solid hsl(var(--border));
     border-radius: 50%;
@@ -152,7 +331,7 @@ const { directories } = Astro.props
     visibility: hidden;
     transform: scale(0.8);
     transition: all 0.3s ease;
-    z-index: 1000;
+    z-index: 10;
   }
 
   .close-btn.active {
@@ -177,5 +356,10 @@ const { directories } = Astro.props
   .sheet__title {
     padding-left: 3rem;
     margin-top: 0;
+  }
+
+  .folder-structure {
+    padding-top: 0.5rem;
+    padding-left: 1rem
   }
 </style>

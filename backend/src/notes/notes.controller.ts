@@ -44,10 +44,10 @@ export class NotesController {
       const content = file.buffer.toString('utf-8');
 
       if (!isValidMarkdown(content)) {
-        console.warn(`⚠️ File ${title} does not contain valid markdown`);
+        console.warn(`File ${title} does not contain valid markdown`);
         throw new Error('Not a valid .md');
       } else {
-        console.log(`✅ File ${title} is valid markdown`);
+        console.log(`File ${title} is valid markdown`);
         const sanitizeContent = DOMPurify.sanitize(content);
         return { title, content: sanitizeContent } as Note;
       }
@@ -86,10 +86,10 @@ export class NotesController {
   @Post('html')
   renderHtml(@Body('content') body: string) {
     if (!isValidMarkdown(body)) {
-        console.warn(`⚠️ Does not contain valid markdown`);
+        console.warn(`Does not contain valid markdown`);
         throw new Error('Not a valid .md');
       } else {
-        console.log(`✅ Is valid markdown`);
+        console.log(`Is valid markdown`);
         const md = new MarkdownIt({html: false});
         const html = md.render(body);
         return DOMPurify.sanitize(html);

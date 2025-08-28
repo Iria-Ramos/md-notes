@@ -44,4 +44,8 @@ export class NotesService {
   update(id: number, title: string, content: string) {
     return this.notesRepository.update(id, { title, content })
   }
+
+  updateTitle(id: number, title: string) {
+    return this.notesRepository.update(id, { title })
+  }
 }

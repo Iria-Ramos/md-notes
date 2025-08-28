@@ -1,10 +1,32 @@
 ---
+import type { Node } from "../../shared/type/folder";
 import Button from "../base/button.astro";
+import FolderSelector from "./folder-selector.astro";
+
+export interface Props {
+  folderTree: Node; 
+}
+
+const { folderTree } = Astro.props;
+function filterOutNotes(node: Node): Node {
+  if (!node.children) return node;
+
+  return {
+    ...node,
+    children: node.children
+      .filter(child => child.type !== "note") 
+      .map(child => filterOutNotes(child))
+  };
+}
+
+const folders = filterOutNotes(folderTree)
+console.log("Folders:", folders)
 ---
 
 <section>
   <form class="upload-form" method="post" enctype="multipart/form-data">
     <input class="file-input" name="files" type="file" accept=".md" multiple />
+    <FolderSelector folders={folders}/>
     <div class="separation">
       <Button type="submit" variant="clear"> Upload </Button>
     </div>
@@ -16,19 +38,24 @@ import Button from "../base/button.astro";
 <div id="file-info-list"></div>
 
 <script>
+  import { apiFetch } from "../../shared/lib/api";
+import type { CreateNode } from "../../shared/type/folder";
+
   const form = document.querySelector("form") as HTMLFormElement;
   const status = document.getElementById("status") as HTMLParagraphElement;
-  const fileInput = document.querySelector(
-    `input[type='file']`
-  ) as HTMLInputElement;
-  const button = document.querySelector("button") as HTMLButtonElement;
-  const fileInfoList = document.getElementById(
-    "file-info-list"
-  ) as HTMLDivElement;
+
+  const slcFolder = document.getElementById("selected-folder");
+  let folderId = 1;
+  if(slcFolder) {
+    slcFolder.addEventListener("change", (event) => {
+      const target = event.target as HTMLSelectElement;
+      folderId = Number(target.value);
+    })
+  }
 
   async function uploadFiles(formData: FormData): Promise<void> {
     try {
-      const response = await fetch("http://localhost:3000/notes/upload", {
+      const response = await apiFetch('/notes/upload/', {
         method: "POST",
         body: formData,
       });
@@ -38,17 +65,36 @@ import Button from "../base/button.astro";
       }
 
       const data = await response.json();
-      updateStatusMessage('✅ File uploaded successfully.');
+      for (let element of data) {
+        const newNode: CreateNode = {
+            type: 'note', 
+            name: element.title, 
+            parentId: folderId, 
+            noteId: Number(element.id)
+        }
+        const folderRes = await apiFetch('/dirs/addChild', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newNode)
+        });
+
+        if (!folderRes.ok) {
+          throw new Error("Network response was not OK");
+        } 
+      }
+      updateStatusMessage('File uploaded successfully.');
     } catch (error) {
       console.error("Uploading files failed", error);
-      updateStatusMessage("❌ Uploading file(s) failed.");
+      updateStatusMessage("Uploading file(s) failed.");
     }
   }
 
   function handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
 
-    updateStatusMessage("⏳ Uploading file(s)...");
+    updateStatusMessage("Uploading file(s)...");
     const formData = new FormData(form);
     uploadFiles(formData);
   }

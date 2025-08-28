@@ -4,15 +4,22 @@ import BaseLayout from '../../app/layouts/base-layout.astro';
 import Button from '../../components/base/button.astro';
 import FileUpload from '../../components/layout/file-upload.astro';
 import HeadingBlock from '../../components/layout/heading-block.astro';
+import { apiFetch } from '../../shared/lib/api';
+import type { Node } from '../../shared/type/folder';
+
+const dirs = await apiFetch('/dirs/root');
+const folderTree: Node = await dirs.json();
 ---
 
-<BaseLayout title="Create new md">
-    <HeadingBlock
-        title={siteConfig.uploadHeadTitle}
-        description={siteConfig.uploadHeadDesc}
-    >
-    <FileUpload/>
-    </HeadingBlock>
+<BaseLayout title="Create new md" folderTree={folderTree}>
+    <div class="main">
+        <HeadingBlock
+            title={siteConfig.uploadHeadTitle}
+            description={siteConfig.uploadHeadDesc}
+        >
+        <FileUpload folderTree={folderTree}/>
+        </HeadingBlock>
+    </div>
 </BaseLayout>
 
 

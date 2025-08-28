@@ -1,7 +1,7 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import FileCard from './ui/file-card.astro';
-import type { FileFromAPI } from '../../shared/type/file-from-api';
+import FileCard from "./ui/file-card.astro";
+import type { FileFromAPI } from "../../shared/type/file-from-api";
+import HeadingBlock from "../layout/heading-block.astro";
 
 export interface Props {
   files: FileFromAPI[];
@@ -10,13 +10,54 @@ export interface Props {
 const { files = [] } = Astro.props;
 ---
 
-<section class="featured-files">
+<HeadingBlock id="files-heading-title" title="All files" description="Select a folder in the directory to see its files below" />
+
+<section class="featured-files" id="featured-files">
   {
     files.map((file, idx) => {
       return <FileCard file={file} />;
     })
   }
 </section>
+
+<script type="module">
+import { apiFetch } from "../../shared/lib/api";
+
+  window.addEventListener("folderSelected", async (e) => {
+    const container = document.getElementById("featured-files");
+    const folderId = e.detail;
+    if (!folderId) return;
+
+    const res = await apiFetch(`/dirs/folders/${folderId}/files`);
+
+    if (!res.ok) {
+      alert("Failed to load files");
+      return;
+    }
+
+    const files = await res.json();
+    if (container) {
+      const allowedIds = new Set(files.notes.map((n) => n.id));
+      const folderName = files.folderName
+      const titleEl = document.getElementById("files-heading-title");
+      if(titleEl) {
+        titleEl.innerHTML = ``;
+        const el = document.createElement("div");
+        el.innerHTML = `<h1>Selected folder: ${folderName}</h1>`;
+        titleEl.appendChild(el);
+      }
+      const allCards = document.querySelectorAll('[id^="file-"]');
+      allCards.forEach((card) => {
+        const id = parseInt(card.id.replace("file-", ""), 10);
+        if (!allowedIds.has(id)) {
+          card.style.display = "none";
+        } else {
+          card.style.display = "";
+        }
+      });
+    }
+  });
+</script>
 
 <style>
   .featured-files {

@@ -1,0 +1,54 @@
+---
+import type { Node } from "../../shared/type/folder";
+
+export interface Props {
+    folders: Node;
+}
+const { folders } = Astro.props;
+---
+
+<div class="box select-flex" id="selected-folder">
+    <select id="folder-selector"></select>
+</div>
+
+<script define:vars={{ folders }}>
+    const select = document.getElementById("folder-selector");
+
+    function addFolderOptions(node, prefix = "") {
+        if (node.type === "folder") {
+            const option = document.createElement("option");
+            option.value = node.id;
+            option.textContent = prefix + node.name;
+            select.appendChild(option);
+
+            // recurse into children
+            node.children?.forEach((child) =>
+                addFolderOptions(child, prefix + "— "),
+            );
+        }
+    }
+
+    addFolderOptions(folders);
+</script>
+
+<style>
+    .box {
+        border: 1px solid hsl(var(--border));
+        background-color: hsl(var(--card));
+        color: hsl(var(--card-foreground, #111827));
+        padding: 0.5rem 1.5rem 0.5rem 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+        overflow-y: scroll;
+        display: table;
+        width: auto;
+    }
+    #folder-selector {
+        background: transparent;
+        width: max-content;
+    }
+
+    
+</style>

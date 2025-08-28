@@ -2,15 +2,16 @@
 type Props = {
   title: string;
   description: string;
+  id?: string;
   headingTwo?: string;
   class?: string;
 };
 
-const { title, description, headingTwo, class: className = '' } = Astro.props;
+const { title, description, id, headingTwo, class: className = '' } = Astro.props;
 ---
 
 <header class={`heading-block ${className}`}>
-  <h1>{title}</h1>
+  <h1 id={id}>{title}</h1>
   {description && <p>{description}</p>}
   {headingTwo && <h2>{headingTwo}</h2>}
   <slot/>

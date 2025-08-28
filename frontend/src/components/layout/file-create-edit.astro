@@ -1,18 +1,35 @@
 ---
+import type { Node } from "../../shared/type/folder";
 import Button from "../base/button.astro";
+import FolderSelector from "./folder-selector.astro";
 
 interface Props {
   file?: {
     title: string;
     content: string;
   };
+  folderTree: Node; 
 }
 
-const { file } = Astro.props;
+const { file, folderTree } = Astro.props;
+function filterOutNotes(node: Node): Node {
+  if (!node.children) return node;
+
+  return {
+    ...node,
+    children: node.children
+      .filter(child => child.type !== "note") 
+      .map(child => filterOutNotes(child))
+  };
+}
+
+const folders = filterOutNotes(folderTree)
 ---
 
 <div class="box title-grid">
   <input id="titleInput" class="box" type="text" placeholder="Filename (optional)" value={file?.title || ''} />
+  <FolderSelector folders={folders}/>
+
   <div class="spacing">
     <Button id="formatBtn" type="submit" variant="clear">Preview</Button>
     <Button id="grammarBtn" type="submit" variant="clear">Check grammar</Button>
@@ -26,6 +43,9 @@ const { file } = Astro.props;
 </div>
 
 <script>
+import { apiFetch } from "../../shared/lib/api";
+import type { CreateNode } from "../../shared/type/folder";
+
   const textarea = document.getElementById(
     "mdText"
   ) as HTMLTextAreaElement | null;
@@ -39,7 +59,7 @@ const { file } = Astro.props;
   if (formatBtn && textarea && htmlBox) {
     formatBtn.addEventListener("click", async () => {
       try {
-        const response = await fetch("http://localhost:3000/notes/html", {
+        const response = await apiFetch("/notes/html", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: textarea.value }),
@@ -60,7 +80,7 @@ const { file } = Astro.props;
   if (grammarBtn && textarea) {
     grammarBtn.addEventListener("click", async () => {
       const content = textarea.value;
-      const response = await fetch("http://localhost:3000/grammar", {
+      const response = await apiFetch("/grammar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: content }),
@@ -126,7 +146,16 @@ const { file } = Astro.props;
   }
 
   const uploadBtn = document.getElementById("uploadBtn");
-
+  const slcFolder = document.getElementById("selected-folder");
+  let folderId = 1;
+  console.log(slcFolder)
+  if(slcFolder) {
+    slcFolder.addEventListener("change", (event) => {
+      const target = event.target as HTMLSelectElement;
+      console.log(target.value)
+      folderId = Number(target.value);
+    })
+  }
   if (uploadBtn && textarea) {
     uploadBtn.addEventListener("click", async () => {
       const content = textarea.value;
@@ -135,7 +164,7 @@ const { file } = Astro.props;
       
       const segments = window.location.pathname.split('/').filter(Boolean);
       if(segments[1] === "edit") {
-        const response = await fetch("http://localhost:3000/notes/" + segments[2], {
+        const response = await fetch(`/notes/${segments[2]}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title: filename, content: content }),
@@ -144,11 +173,36 @@ const { file } = Astro.props;
         if (!response.ok) {
           throw new Error("Network response was not OK");
         }
-  
-        alert("✅ File edit uploaded succesfully!");
+
+        const resNodeId = await apiFetch(`/dirs/note/${segments[2]}` , {
+          method: "GET",
+        });
+
+        if (!resNodeId.ok) {
+          throw new Error("Network response was not OK");
+        }
+        
+        const noteId = await resNodeId.json()
+        const newNode: CreateNode = {
+            type: 'note', 
+            name: filename, 
+            parentId: folderId, 
+            noteId: Number(noteId)
+        }
+        const editNode = await fetch(`/dirs/${segments[2]}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newNode),
+        });
+
+        if (!editNode.ok) {
+          throw new Error("Network response was not OK");
+        }
+
+        alert("File edit uploaded succesfully!");
   
       } else {
-        const response = await fetch("http://localhost:3000/notes", {
+        const response = await apiFetch("/notes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title: filename, content: content }),
@@ -157,8 +211,28 @@ const { file } = Astro.props;
         if (!response.ok) {
           throw new Error("Network response was not OK");
         }
+
+        const element = await response.json();
+
+        const newNode: CreateNode = {
+            type: 'note', 
+            name: element.title, 
+            parentId: folderId, 
+            noteId: Number(element.id)
+        }
+        const folderRes = await apiFetch(`/dirs/addChild`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newNode)
+        });
+
+        if (!folderRes.ok) {
+          throw new Error("Network response was not OK");
+        } 
   
-        alert("✅ File uploaded succesfully!");
+        alert("File uploaded succesfully!");
       }
 
     });
@@ -189,10 +263,13 @@ const { file } = Astro.props;
   .title-grid {
     margin-top: 1rem;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     justify-content: space-between;
     column-gap: 1.25rem;
     align-items: center;
+    .select-flex {
+        width: 50%;
+    }
   }
 
   .box.grid {
@@ -210,4 +287,6 @@ const { file } = Astro.props;
     background: transparent;
     resize: none;
   }
+
+
 </style>

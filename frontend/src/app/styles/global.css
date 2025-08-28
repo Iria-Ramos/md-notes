@@ -1,6 +1,9 @@
 @import './variables.css';
 @import './base.css';
 @import './components.css';
+@import "tailwindcss";
+@import "../../../node_modules/preline/variants.css";
+
 @layer critical {
   html {
     font-family: 'Roboto', system-ui, sans-serif;
@@ -35,7 +38,7 @@
 ::-webkit-scrollbar-thumb {
   border-radius: 6px;
   background: linear-gradient(#00c6ff, #057bad);
-  box-shadow: 0 0 1px rgba(255, 255, 255, .5); 
+  box-shadow: 0 0 1px rgba(255, 255, 255, .5);
 }
 
 html {
@@ -50,12 +53,10 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background: conic-gradient(
-    at bottom right,
-    var(--gradient-from),
-    var(--gradient-via),
-    var(--gradient-to)
-  );
+  background: conic-gradient(at bottom right,
+      var(--gradient-from),
+      var(--gradient-via),
+      var(--gradient-to));
   color: var(--oposite-color);
   transition:
     background-color 0.3s ease,
@@ -116,16 +117,28 @@ a {
 }
 
 .container {
-  margin-right: auto;
-  margin-left: auto;
-  padding-right: 2rem;
-  padding-left: 2rem;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: repeat(3, "65px")
 }
 
-@media (min-width: 1400px) {
-  .container {
-    max-width: 1400px;
-  }
+.container header {
+  grid-column: 2 / -1;
+}
+
+.container .sidebar {
+  grid-column: span 1;
+}
+
+.container .main {
+  grid-column: span 3;
+}
+
+.container footer {
+  grid-column: 2 / -1;
 }
 
 code,
@@ -187,6 +200,7 @@ tbody tr:hover {
 tbody tr:last-child td {
   border-bottom: none;
 }
+
 :global(.dark) thead {
   background-color: #1f2937;
   color: #d1d5db;
@@ -236,6 +250,7 @@ tbody tr:last-child td {
 .mt-0 {
   margin-top: 0 !important;
 }
+
 .mt-10 {
   margin-top: 2.5rem;
 }
@@ -258,14 +273,17 @@ tbody tr:last-child td {
   content: '|';
   animation: blink 1s steps(2, start) infinite;
 }
+
 .main {
   padding: 0 0.5rem;
   font-size: 1.2rem;
 }
+
 .post-article {
   line-height: 1.7;
   margin-top: 1rem;
 }
+
 .post-title {
   font-family: 'PT Serif', serif;
   font-size: 2.5rem;
@@ -274,6 +292,7 @@ tbody tr:last-child td {
   margin: 0 0 1rem 0;
   color: hsl(var(--foreground));
 }
+
 .post-content {
   font-size: 1.1rem;
   line-height: 1.8;
@@ -325,10 +344,12 @@ tbody tr:last-child td {
 .post-content :global(.mdx-list-item) {
   margin-bottom: 0.5rem;
 }
+
 .heading-header {
   text-align: center;
   margin: 2.5rem 0;
 }
+
 .heading-title {
   font-family: 'PT Serif', serif;
   font-size: 2.5rem;
@@ -352,6 +373,7 @@ tbody tr:last-child td {
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   border-radius: 2px;
 }
+
 .heading-description {
   font-size: 1.125rem;
   color: hsl(var(--muted-foreground));
@@ -359,11 +381,13 @@ tbody tr:last-child td {
   margin: 0 auto;
   line-height: 1.6;
 }
+
 @media (max-width: 768px) {
   .heading-title {
     font-size: 2rem;
   }
 }
+
 .code-cmd {
   display: block;
   width: 75%;
@@ -376,6 +400,7 @@ tbody tr:last-child td {
   letter-spacing: 0.025em;
   border-radius: 2px;
 }
+
 blockquote {
   margin: 1.5em 0;
   padding: 1em 1.5em;
@@ -403,15 +428,17 @@ blockquote {
 }
 
 .mdx-link:hover {
-  color: #64748b; /* slate-600 */
+  color: #64748b;
+  /* slate-600 */
 }
 
 :global(.dark) .mdx-link:hover {
-  color: #e2e8f0; /* slate-200 */
+  color: #e2e8f0;
+  /* slate-200 */
 }
 
 .mdx-link:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #18A2EC;
   outline-offset: 2px;
   text-decoration: underline;
 }
@@ -477,6 +504,7 @@ blockquote {
 :global(.dark) .mdx-list-item {
   color: hsl(var(--foreground));
 }
+
 .mdx-list {
   margin: 1.5rem 0;
   padding-left: 2rem;
@@ -507,3 +535,109 @@ blockquote {
 :global(.dark) .mdx-list {
   color: hsl(var(--foreground));
 }
+
+.TreeNode {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.TreeNodeToolBar {
+  display: flex;
+}
+
+.editingName {
+  display: flex;
+}
+
+.editingName input {
+  width: 10vh;
+}
+
+.iconContainer.editableNameContainer {
+  min-width: 90px;
+  display: block ruby;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.FolderTree > .TreeNode > .TreeNodeToolBar > svg  {
+  cursor: pointer;
+}
+
+.FolderTree > .TreeNode > .editableNameContainer {
+  cursor: pointer;
+}
+
+.FolderTree > div:first-child > span:nth-child(4) > svg:nth-child(2) {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.TreeNode {
+  transition: background 0.2s ease;
+}
+
+.TreeNode:hover::after {
+  background-color: #18A2EC;
+  content: '···';
+  position: absolute;
+  right: 8px;
+  color: hsl(var(--oposite-color));
+  padding: 1px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.TreeNode .typeIconContainer {
+  pointer-events: none;
+}
+
+.TreeNode .menu-actions {
+  position: absolute;
+  right: 8px;
+  transform: translateY(0%);
+  min-width: 20px;           
+  min-height: 20px;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.TreeNode .options {
+  width: 100px;
+  height: 100px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 4px;
+  padding: 4px;
+  z-index: 20;
+}
+
+.TreeNode .option-btn {
+  background: hsl(var(--secondary));
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: hsl(var(--foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.TreeNode .option-btn:not(:disabled):hover {
+  background: #18A2EC;
+  color: white;
+}
+
+.rename-input {
+  background-color: hsl(var(--accent));
+  width: 50%;
+}
+

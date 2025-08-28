@@ -4,3 +4,9 @@ export type FileFromAPI = {
   content: string;
   date: string;
 };
+
+export type FileNode = {
+  folderId: string,
+  folderName: string,
+  notes: FileFromAPI[],
+}

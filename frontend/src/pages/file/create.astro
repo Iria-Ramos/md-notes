@@ -2,14 +2,19 @@
 import BaseLayout from "../../app/layouts/base-layout.astro";
 import FileCreateEdit from "../../components/layout/file-create-edit.astro";
 import HeadingBlock from "../../components/layout/heading-block.astro";
+import { apiFetch } from "../../shared/lib/api";
+import type { Node } from "../../shared/type/folder";
+
+const dirs = await apiFetch('/dirs/root');
+const folderTree: Node = await dirs.json();
 ---
 
-<BaseLayout title="Create new md">
+<BaseLayout title="Create new md" folderTree={folderTree}>
   <div class="main">
     <HeadingBlock
       title="Create a new note"
       description="Create, preview, save locally and upload it to the server"
     />
-    <FileCreateEdit/>
+    <FileCreateEdit folderTree={folderTree}/>
   </div>
 </BaseLayout>

@@ -29,10 +29,10 @@ const currentPath = Astro.url.pathname;
     width: 100%
   }
 
-  .desktop-nav {
+  /* .desktop-nav {
     display: none;
     gap: 0.1rem;
-  }
+  } */
 
   .nav-link {
     color: hsl(var(--muted-foreground));
@@ -106,20 +106,12 @@ const currentPath = Astro.url.pathname;
       display: flex;
     }
 
-    .mobile-menu-btn,
+    /* .mobile-menu-btn,
     .mobile-sheet,
     .mobile-sheet-overlay,
     .mobile-close-btn {
       display: none;
-    }
-  }
-
-  :global(.dark) .mobile-sheet {
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.5);
-  }
-
-  :global(.dark) .mobile-close-btn {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    } */
   }
 
   .mobile-sheet.active .mobile-nav__link {

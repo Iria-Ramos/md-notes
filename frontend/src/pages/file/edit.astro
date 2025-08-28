@@ -2,13 +2,18 @@
 import BaseLayout from "../../app/layouts/base-layout.astro";
 import HeadingBlock from "../../components/layout/heading-block.astro";
 import MinimalFileCard from "../../components/post/ui/minimal-file-card.astro";
+import { apiFetch } from "../../shared/lib/api";
 import type { FileFromAPI } from "../../shared/type/file-from-api";
+import type { Node } from "../../shared/type/folder";
 
-const res = await fetch("http://localhost:3000/notes");
+const res = await apiFetch('/notes');
 const minimalFiles: FileFromAPI[] = await res.json();
+
+const dirs = await apiFetch('/dirs/root');
+const folderTree: Node = await dirs.json();
 ---
 
-<BaseLayout title="Edit note">
+<BaseLayout title="Edit note" folderTree={folderTree}>
   <div class="main">
     <HeadingBlock
       title="Choose note to edit"
