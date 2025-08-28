@@ -1,4 +1,4 @@
-# Notes App
+# MD-Notes
 
 A full-stack web application that allows users to **create, edit, and upload Markdown (`.md`) files**.  
 It is built with:
@@ -40,7 +40,7 @@ This will start:
 
 - Frontend (Astro) on port **4321**
 
-## Database backups
+## ⛁ Database backups
 To create a backup of your current database:
 
 ```bash
