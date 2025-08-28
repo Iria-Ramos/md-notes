@@ -7,6 +7,13 @@ It is built with:
 - **Frontend:** [Astro](https://astro.build/) (UI)
 - **Database:** MySQL 8.0
 
+![Md-notes home page](/img/home.png "Home page")
+
+![Md-notes create page previewing a note](/img/create.png "Preview note")
+
+![Md-notes upload page](/img/upload.png "Upload note")
+
+
 ---
 
 ## 🚀 Features

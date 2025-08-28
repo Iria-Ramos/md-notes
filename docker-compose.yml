@@ -50,7 +50,8 @@ services:
     ports:
       - "4321:4321"
     environment:
-      PUBLIC_API_URL: http://backend:3000
+      PUBLIC_ASTRO_API_URL: http://backend:3000
+      PUBLIC_API_URL: http://localhost:3000
     depends_on:
       - backend
 

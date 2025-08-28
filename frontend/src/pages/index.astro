@@ -3,13 +3,13 @@ import { siteConfig } from "../app/config/site";
 import BaseLayout from "../app/layouts/base-layout.astro";
 import HeadingBlock from "../components/layout/heading-block.astro";
 import FeaturedFiles from "../components/post/featured-files.astro";
-import { apiFetch } from "../shared/lib/api";
+import { astroFetch } from "../shared/lib/api";
 import type { FileFromAPI } from "../shared/type/file-from-api";
 import type { Node } from "../shared/type/folder";
 
-const files = await apiFetch('/notes');
+const files = await astroFetch('/notes');
 const featuredFiles: FileFromAPI[] = await files.json();
-const dirs = await apiFetch('/dirs/root');
+const dirs = await astroFetch('/dirs/root');
 const folderTree: Node = await dirs.json();
 ---
 

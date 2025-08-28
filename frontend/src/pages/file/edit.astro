@@ -2,14 +2,14 @@
 import BaseLayout from "../../app/layouts/base-layout.astro";
 import HeadingBlock from "../../components/layout/heading-block.astro";
 import MinimalFileCard from "../../components/post/ui/minimal-file-card.astro";
-import { apiFetch } from "../../shared/lib/api";
+import { astroFetch } from "../../shared/lib/api";
 import type { FileFromAPI } from "../../shared/type/file-from-api";
 import type { Node } from "../../shared/type/folder";
 
-const res = await apiFetch('/notes');
+const res = await astroFetch('/notes');
 const minimalFiles: FileFromAPI[] = await res.json();
 
-const dirs = await apiFetch('/dirs/root');
+const dirs = await astroFetch('/dirs/root');
 const folderTree: Node = await dirs.json();
 ---
 

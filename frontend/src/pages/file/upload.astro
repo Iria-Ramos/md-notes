@@ -4,10 +4,10 @@ import BaseLayout from '../../app/layouts/base-layout.astro';
 import Button from '../../components/base/button.astro';
 import FileUpload from '../../components/layout/file-upload.astro';
 import HeadingBlock from '../../components/layout/heading-block.astro';
-import { apiFetch } from '../../shared/lib/api';
+import { astroFetch } from '../../shared/lib/api';
 import type { Node } from '../../shared/type/folder';
 
-const dirs = await apiFetch('/dirs/root');
+const dirs = await astroFetch('/dirs/root');
 const folderTree: Node = await dirs.json();
 ---
 

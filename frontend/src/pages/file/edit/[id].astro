@@ -2,12 +2,12 @@
 import BaseLayout from "../../../app/layouts/base-layout.astro";
 import FileCreateEdit from "../../../components/layout/file-create-edit.astro";
 import HeadingBlock from "../../../components/layout/heading-block.astro";
-import { apiFetch } from "../../../shared/lib/api";
+import { astroFetch } from "../../../shared/lib/api";
 import type { FileFromAPI } from "../../../shared/type/file-from-api";
 import type { Node } from "../../../shared/type/folder";
 
 export async function getStaticPaths() {
-  const res = await apiFetch('/notes');
+  const res = await astroFetch('/notes');
   const files = await res.json()
   return files.map((file: FileFromAPI) => ({
     params: { id: file.id },
@@ -16,11 +16,11 @@ export async function getStaticPaths() {
 
 const { id } = Astro.params;
 
-const res = await apiFetch(`/notes/${id}`);
+const res = await astroFetch(`/notes/${id}`);
 if (!res.ok) throw new Error(`Note not found: ${id}`);
 const file = await res.json();
 
-const dirs = await fetch('/dirs/root');
+const dirs = await astroFetch('/dirs/root');
 const folderTree: Node = await dirs.json();
 ---
 

@@ -5,11 +5,11 @@ import BaseLayout from '../../app/layouts/base-layout.astro';
 import type { FileFromAPI } from '../../shared/type/file-from-api';
 import sanitizeHtml from "sanitize-html";
 import type { Node } from '../../shared/type/folder';
-import { apiFetch } from '../../shared/lib/api';
+import { astroFetch } from '../../shared/lib/api';
 
 
 export async function getStaticPaths() {
-  const res = await apiFetch(`/notes`);
+  const res = await astroFetch(`/notes`);
   const files = await res.json()
   return files.map((file: FileFromAPI) => ({
     params: { id: file.id },
@@ -19,14 +19,14 @@ export async function getStaticPaths() {
 const { id } = Astro.params;
 
 // Fetch the note from your endpoint
-const res = await apiFetch(`/notes/${id}`);
+const res = await astroFetch(`/notes/${id}`);
 if (!res.ok) throw new Error(`Note not found: ${id}`);
 
 const file = await res.json();
 const html = await marked(file.content);
 const safeHtml = sanitizeHtml(html)
 
-const dirs = await apiFetch('/dirs/root');
+const dirs = await astroFetch('/dirs/root');
 const folderTree: Node = await dirs.json();
 ---
 
